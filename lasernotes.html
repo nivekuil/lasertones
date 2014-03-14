@@ -1,0 +1,87 @@
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.0/jquery.min.js"></script>
+<video autoplay style="visibility:hidden;position:absolute;"></video>
+<canvas></canvas>
+
+
+<script>
+  alert('bye');
+  if (!window.AudioContext) {
+        window.AudioContext = window.webkitAudioContext;
+  }
+  if (!navigator.getUserMedia) {
+        navigator.getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+  }
+  var canvas = document.querySelector('canvas');
+  canvas.width = 200;
+  canvas.height = 160;
+  var video = document.querySelector('video');
+
+  var context = canvas.getContext('2d');
+  var audioContext = new AudioContext();
+
+  navigator.getUserMedia({video: true, audio: false}, function(stream) {
+    video.src = window.URL.createObjectURL(stream);
+    //requestAnimationFrame(update);
+    video.onloadedmetadata = function(e) {
+      setInterval(update, 200);
+      //update();
+    };
+  },  function(e) {
+      console.log('wtf', e);});
+
+  var frequencies = [262, 294, 330, 349, 392, 440, 494, 523];
+  /*var oscillators = [undefined, undefined, undefined, undefined,
+                     undefined, undefined, undefined, undefined];*/
+  var oscillators = [];
+
+  function update() {
+    //requestAnimationFrame(update);
+    context.drawImage(video, 0, 0, canvas.width, canvas.width);
+    var imageData = context.getImageData(0,0,canvas.width,canvas.width);
+    /*for (var o=0; o<oscillators.length; ++o) {
+        if (oscillators[o] != undefined){
+          oscillators[o].stop(1);
+          delete oscillators[o];
+        }
+    }*/
+    for (var o=0; o<oscillators.length; ++o) {
+        oscillators[o].stop(0);
+        oscillators.splice(o, 1);
+    }
+    for (var x=0;x<canvas.width; ++x)
+    {
+        for (var y=0;y<canvas.height; ++y)
+        {
+          var i = (y * canvas.width + x) * 4;
+          if (imageData.data[i]>220 && imageData.data[i+1]<100 &&
+              imageData.data[i+2]<100)
+          {
+              note = Math.floor(x/25);
+              var o = audioContext.createOscillator();
+              o.frequency.value = frequencies[note];
+              o.connect(audioContext.destination);
+              /*if (oscillators[note] != undefined) {
+                oscillators[note].stop(0);
+                delete oscillators[o];
+              }*/
+              o.start(0);
+              //oscillators[note] = o;
+              oscillators.push(o);
+
+              x = nextMultipleUp(x, 25);
+              break;
+          }
+        }
+    }
+
+  function nextMultipleUp(a, b)
+  {
+    var r = a % b;
+    if (r === 0)
+        return a;
+    else
+        return a + b - r;
+  }
+}
+
+</script>
