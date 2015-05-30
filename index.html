@@ -4,10 +4,11 @@
 
 <script>
   if (!window.AudioContext) {
-        window.AudioContext = window.webkitAudioContext;
+    window.AudioContext = window.webkitAudioContext;
   }
   if (!navigator.getUserMedia) {
-        navigator.getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+    navigator.getUserMedia = navigator.webkitGetUserMedia ||
+      navigator.mozGetUserMedia;
   }
   var canvas = document.querySelector('canvas');
   canvas.width = 200;
@@ -19,29 +20,18 @@
 
   navigator.getUserMedia({video: true, audio: false}, function(stream) {
     video.src = window.URL.createObjectURL(stream);
-    //requestAnimationFrame(update);
     video.onloadedmetadata = function(e) {
       setInterval(update, 200);
-      //update();
     };
   },  function(e) {
       console.log('wtf', e);});
 
   var frequencies = [262, 294, 330, 349, 392, 440, 494, 523];
-  /*var oscillators = [undefined, undefined, undefined, undefined,
-                     undefined, undefined, undefined, undefined];*/
   var oscillators = [];
 
   function update() {
-    //requestAnimationFrame(update);
     context.drawImage(video, 0, 0, canvas.width, canvas.width);
     var imageData = context.getImageData(0,0,canvas.width,canvas.width);
-    /*for (var o=0; o<oscillators.length; ++o) {
-        if (oscillators[o] != undefined){
-          oscillators[o].stop(1);
-          delete oscillators[o];
-        }
-    }*/
     for (var o=0; o<oscillators.length; ++o) {
         oscillators[o].stop(0);
         oscillators.splice(o, 1);
@@ -58,12 +48,7 @@
               var o = audioContext.createOscillator();
               o.frequency.value = frequencies[note];
               o.connect(audioContext.destination);
-              /*if (oscillators[note] != undefined) {
-                oscillators[note].stop(0);
-                delete oscillators[o];
-              }*/
               o.start(0);
-              //oscillators[note] = o;
               oscillators.push(o);
 
               x = nextMultipleUp(x, 25);
